@@ -30,6 +30,9 @@ Route::controller(HotelController::class)->group(function(){
     Route::post('hotels', 'store');
     Route::put('hotels/{id}', 'update');
     Route::delete('hotels/{id}', 'destroy');
+
+    //restore hotel with id
+    Route::put('hotels/restore/{id}', 'restore');
 });
 
 // hotel images API
@@ -41,6 +44,8 @@ Route::controller(HotelImageController::class)->group(function(){
     Route::delete('hotel-images/{id}', 'destroy');
 
     Route::get('hotel-images/hotel/{id}', 'getImageByHotelId');
+    Route::delete('hotel-images/hotel/{id}', 'deleteImageByHotelId');
+    Route::put('hotel-images/hotel/{id}', 'restoreWithHotelID');
 });
 
 // Categories API
@@ -50,5 +55,9 @@ Route::controller(CategoryController::class)->group(function(){
     Route::post('categories', 'store');
     Route::put('categories/{id}', 'update');
     Route::delete('categories/{id}', 'destroy');
+
+    Route::delete('categories/hotel/{id}', 'deleteCategoryByHotelId');
+    Route::put('categories/hotel/{id}', 'restoreByHotelId');
+    Route::put('categories/restore/{id}', 'restore');
 });
 

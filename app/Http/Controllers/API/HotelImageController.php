@@ -11,14 +11,12 @@ use App\Http\Controllers\API\BaseController as BaseController;
 use App\Http\Resources\HotelImageResource;
 use Illuminate\Support\Facades\Validator;
 
-
 class HotelImageController extends BaseController
 {
     //
     public function index()
     {
-        $hotelImage = HotelImage::all();
-
+        $hotelImage = HotelImage::get();
         return $this->sendResponse(HotelImageResource::collection($hotelImage), 'Hotels-image retrieved successfully.');
     }
 
@@ -61,7 +59,7 @@ class HotelImageController extends BaseController
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
-        $hotelImage = HotelImage::findOrFail($id);
+        $hotelImage = HotelImage::find($id);
         if (is_null($hotelImage)) {
             return $this->sendError('Hotel image not found.');
         }
@@ -72,8 +70,7 @@ class HotelImageController extends BaseController
         $hotelImage->save();
         if (($hotelImage)->save()) {
             return $this->sendResponse(new HotelImageResource($hotelImage), 'Hotel image updated successfully.');
-        }
-        else{
+        } else {
             return $this->sendError('Hotel image not updated.');
         }
     }
@@ -87,9 +84,34 @@ class HotelImageController extends BaseController
         }
         if ($hotelImage->delete()) {
             return $this->sendResponse([], 'Hotel image deleted successfully.');
-        }
-        else {
+        } else {
             return $this->sendError('Hotel image not deleted.');
+        }
+    }
+
+    public function restoreWithHotelID($id){
+        $hotelImage = HotelImage::withTrashed()->where('hotel_id', $id)->restore();
+        if ($hotelImage) {
+            return $this->sendResponse([], 'Hotel image restored successfully.');
+        } else {
+            return $this->sendError('Hotel image not restored.');
+        }
+    }
+
+    public function deleteImageByHotelId($id)
+    {
+        $hotelImage = HotelImage::where('hotel_id', $id)->get();
+
+        if (is_null($hotelImage)) {
+            return $this->sendError('Hotel id not found.');
+        }
+        if (count($hotelImage) > 0) {
+            foreach ($hotelImage as $key => $value) {
+                $value->delete();
+            }
+            return $this->sendResponse([], 'Hotel image deleted successfully.');
+        } else {
+            return $this->sendError('Hotel image not found.');
         }
     }
 
@@ -103,8 +125,7 @@ class HotelImageController extends BaseController
         }
         if (count($hotelImage) > 0) {
             return $this->sendResponse(HotelImageResource::collection($hotelImage), 'Hotel image retrieved successfully.');
-        }
-        else {
+        } else {
             return $this->sendError('Hotel image not found.');
         }
     }

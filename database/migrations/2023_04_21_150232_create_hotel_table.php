@@ -25,6 +25,8 @@ return new class extends Migration
             $table->integer('bathrooms')->nullable();
             $table->float('rating')->nullable();
             $table->timestamps();
+            // soft deletes
+            $table->softDeletes();
         });
     }
 

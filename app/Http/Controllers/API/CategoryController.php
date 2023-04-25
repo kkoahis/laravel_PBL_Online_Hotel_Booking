@@ -14,14 +14,15 @@ class CategoryController extends BaseController
     //
     public function index()
     {
-        $categories = Category::all();
-
+        $categories = Category::get();
         return $this->sendResponse(CategoryResource::collection($categories), 'Categories retrieved successfully.');
     }
 
     public function show($id)
     {
-        $category = Category::find($id);
+        $category = Category::with('hotel')->whereHas('hotel', function ($query) {
+            $query->whereNull('deleted_at');
+        })->find($id);
 
         if (is_null($category)) {
             return $this->sendError('Category not found.');
@@ -36,6 +37,7 @@ class CategoryController extends BaseController
         $validator = Validator::make($input, [
             'name' => 'required',
             'description',
+            // hotel delete_at must null
             'hotel_id' => 'required',
         ]);
 
@@ -60,8 +62,9 @@ class CategoryController extends BaseController
             return $this->sendError('Validation Error.', $validator->errors());
         }
         $category = Category::find($id);
-        if (is_null($category)) {
-            return $this->sendError('Category not found.');
+        // if hotel has field deleted_at is null
+        if ($category->hotel->deleted_at != null) {
+            return $this->sendError('Validation Error.', 'Hotel id is not match');
         }
         $category->name = $input['name'];
         $category->description = $input['description'];
@@ -77,8 +80,53 @@ class CategoryController extends BaseController
         if (is_null($category)) {
             return $this->sendError('Category not found.');
         }
-        $category->delete();
+        if ($category->delete()) {
+            return $this->sendResponse([], 'Category deleted successfully.');
+        }
+    }
 
-        return $this->sendResponse([], 'Category deleted successfully.');
+    public function deleteCategoryByHotelId($id)
+    {
+        $category = Category::where('hotel_id', $id)->get();
+
+        if (is_null($category)) {
+            return $this->sendError('Category not found.');
+        }
+        if($category->count() > 0){
+            foreach ($category as $item) {
+                $item->delete();
+            }
+            return $this->sendResponse([], 'Category deleted successfully.');
+        }
+        else{
+            return $this->sendError('Category not found.');
+        }
+    }
+
+    public function restore($id)
+    {
+        $category = Category::onlyTrashed()->find($id);
+        if (is_null($category)) {
+            return $this->sendError('Category not found.');
+        }
+        if ($category->restore()) {
+            return $this->sendResponse(new CategoryResource($category), 'Category restored successfully.');
+        }
+    }
+
+    public function restoreByHotelId($id)
+    {
+        $category = Category::onlyTrashed()->where('hotel_id', $id)->get();
+        if (is_null($category)) {
+            return $this->sendError('Hotel ID not found.');
+        }
+        if ($category->count() > 0) {
+            foreach ($category as $item) {
+                $item->restore();
+            }
+            return $this->sendResponse([], 'Category restored successfully.');
+        } else {
+            return $this->sendError('Hotel ID not found.');
+        }
     }
 }

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
 use App\Http\Resources\HotelResource;
 use Illuminate\Http\Request;
 use App\Models\Hotel;
 use App\Http\Controllers\API\BaseController as BaseController;
+use App\Models\Category;
 use Illuminate\Support\Facades\Validator;
 
 class HotelController extends BaseController
@@ -14,8 +14,8 @@ class HotelController extends BaseController
     //
     public function index()
     {
-        $hotels = Hotel::all();
-
+        // get hotel image and category
+        $hotels = Hotel::get();
         return $this->sendResponse(HotelResource::collection($hotels), 'Hotels retrieved successfully.');
     }
 
@@ -67,14 +67,13 @@ class HotelController extends BaseController
             'parking_slot' => 'required',
             'bathrooms' => 'required',
             // create_by user admin
-            
         ]);
 
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
-        }   
+        }
 
-        $hotel = Hotel::findOrFail($id);
+        $hotel = Hotel::find($id);
         if (is_null($hotel)) {
             return $this->sendError('Hotel not found.');
         }
@@ -88,8 +87,7 @@ class HotelController extends BaseController
         $hotel->bathrooms = $input['bathrooms'];
         if ($hotel->save()) {
             return $this->sendResponse(new HotelResource($hotel), 'Hotel updated successfully.');
-        }
-        else {
+        } else {
             return $this->sendError('Hotel not updated.');
         }
     }
@@ -100,11 +98,42 @@ class HotelController extends BaseController
         if (is_null($hotel)) {
             return $this->sendError('Hotel not found.');
         }
+
+        $category = $hotel->category;
+        $hotelImage = $hotel->hotelImage;
+
+
+        // if hotel delete, category and hotel image will update deleted_at
         if ($hotel->delete()) {
-            return $this->sendResponse([], 'Hotel deleted successfully.');
+            if ($category) {
+                foreach ($category as $item) {
+                    $item->delete();
+                }
+            }
+            if ($hotelImage) {
+                foreach ($hotelImage as $item) {
+                    $item->delete();
+                }
+            }
         }
-        else {
-            return $this->sendError('Hotel not deleted.');
+
+        return $this->sendResponse([], 'Hotel deleted successfully.');
+    }
+
+
+    public function restore($id)
+    {
+        // category and hotel image will restore
+        $hotel = Hotel::onlyTrashed()->find($id);
+        if (is_null($hotel)) {
+            return $this->sendError('Hotel not found.');
+        }
+
+        if($hotel->restore()){
+            return $this->sendResponse([], 'Hotel restored successfully.');
+        }
+        else{
+            return $this->sendError('Hotel not restored.');
         }
     }
 }
