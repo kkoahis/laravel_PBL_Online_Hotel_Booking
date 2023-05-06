@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Models\Room;
+use App\Models\RoomImage;
 use App\Http\Controllers\API\BaseController as BaseController;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\CategoryResource;
@@ -37,8 +39,8 @@ class CategoryController extends BaseController
         $validator = Validator::make($input, [
             'name' => 'required',
             'description',
-            // hotel delete_at must null
-            'hotel_id' => 'required',
+            // if hotel is soft deleted, then send error response
+            'hotel_id' => 'required|exists:hotel,id,deleted_at,NULL',
         ]);
 
         if ($validator->fails()) {
@@ -62,9 +64,9 @@ class CategoryController extends BaseController
             return $this->sendError('Validation Error.', $validator->errors());
         }
         $category = Category::find($id);
-        // if hotel has field deleted_at is null
-        if ($category->hotel->deleted_at != null) {
-            return $this->sendError('Validation Error.', 'Hotel id is not match');
+        // if category is soft deleted, then send error response
+        if (is_null($category)) {
+            return $this->sendError('Category not found.');
         }
         $category->name = $input['name'];
         $category->description = $input['description'];
@@ -80,9 +82,28 @@ class CategoryController extends BaseController
         if (is_null($category)) {
             return $this->sendError('Category not found.');
         }
+
+        $room = $category->room;
+        $roomImage = $category->room->map(function ($item) {
+            return $item->roomImage;
+        });
+        // echo $roomImage;
+
         if ($category->delete()) {
+            foreach ($room as $item) {
+                $item->delete();
+            }
+
+            foreach ($roomImage as $r) {
+                foreach ($r as $ro) {
+                    $ro->delete();
+                }
+            }
+
             return $this->sendResponse([], 'Category deleted successfully.');
         }
+
+        return $this->sendError('Category not found.');
     }
 
     public function deleteCategoryByHotelId($id)
@@ -92,26 +113,48 @@ class CategoryController extends BaseController
         if (is_null($category)) {
             return $this->sendError('Category not found.');
         }
-        if($category->count() > 0){
+        if ($category->count() > 0) {
             foreach ($category as $item) {
                 $item->delete();
             }
             return $this->sendResponse([], 'Category deleted successfully.');
-        }
-        else{
+        } else {
             return $this->sendError('Category not found.');
         }
     }
 
     public function restore($id)
     {
+        // restore cate then restore room and room image
         $category = Category::onlyTrashed()->find($id);
         if (is_null($category)) {
             return $this->sendError('Category not found.');
         }
+        
+        $room = $category->room()->onlyTrashed()->get();
+        $roomImage = $category->room()->onlyTrashed()->get()->map(function ($item) {
+            return $item->roomImage()->onlyTrashed()->get();
+        });
+
+        // echo $room;
+        // echo $roomImage;
+
         if ($category->restore()) {
-            return $this->sendResponse(new CategoryResource($category), 'Category restored successfully.');
+            foreach ($room as $item) {
+                $item->restore();
+            }
+
+            foreach ($roomImage as $r) {
+                foreach ($r as $ro) {
+                    $ro->restore();
+                }
+            }
+
+            return $this->sendResponse([], 'Category restored successfully.');
         }
+        
+        return $this->sendError('Category not found.');
+
     }
 
     public function restoreByHotelId($id)
@@ -126,7 +169,7 @@ class CategoryController extends BaseController
             }
             return $this->sendResponse([], 'Category restored successfully.');
         } else {
-            return $this->sendError('Hotel ID not found.');
+            return $this->sendError('Hotel ID restore not found.');
         }
     }
 }

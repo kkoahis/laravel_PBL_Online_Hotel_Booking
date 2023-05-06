@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Http\Requests\ImageStoreRequest;
 use App\Http\Controllers\API\BaseController as BaseController;
 use App\Http\Resources\HotelImageResource;
+use App\Models\Hotel;
 use Illuminate\Support\Facades\Validator;
 
 class HotelImageController extends BaseController
@@ -35,7 +36,8 @@ class HotelImageController extends BaseController
     {
         $input = $request->all();
         $validator = Validator::make($input, [
-            'hotel_id' => 'required',
+            // if hotel is soft deleted, then send error response
+            'hotel_id' => 'required|exists:hotel,id,deleted_at,NULL',
             'image_url' => 'required',
         ]);
 
@@ -51,7 +53,7 @@ class HotelImageController extends BaseController
     {
         $input = $request->all();
         $validator = Validator::make($input, [
-            // 'hotel_id' => 'required',
+            'hotel_id' => 'required',
             'image_url' => 'required',
             'image_description'
         ]);
@@ -60,10 +62,18 @@ class HotelImageController extends BaseController
             return $this->sendError('Validation Error.', $validator->errors());
         }
         $hotelImage = HotelImage::find($id);
+        // $hotelImage = HotelImage::find($id);
         if (is_null($hotelImage)) {
             return $this->sendError('Hotel image not found.');
         }
-        // $hotelImage->hotel_id = $input['hotel_id'];
+
+        // if hotel is soft deleted, then send error response
+        $hotel = Hotel::find($input['hotel_id']);
+        if (is_null($hotel)) {
+            return $this->sendError('Hotel ID not found.');
+        }
+
+        $hotelImage->hotel_id = $input['hotel_id'];
         $hotelImage->image_url = $input['image_url'];
         $hotelImage->image_description = $input['image_description'];
 
@@ -89,8 +99,8 @@ class HotelImageController extends BaseController
         }
     }
 
-    public function restoreWithHotelID($id){
-        $hotelImage = HotelImage::withTrashed()->where('hotel_id', $id)->restore();
+    public function restoreByHotelId($id){
+        $hotelImage = HotelImage::onlyTrashed()->where('hotel_id', $id)->restore();
         if ($hotelImage) {
             return $this->sendResponse([], 'Hotel image restored successfully.');
         } else {

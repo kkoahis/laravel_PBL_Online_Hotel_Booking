@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Resources\HotelResource;
-use Illuminate\Http\Request;
 use App\Models\Hotel;
-use App\Http\Controllers\API\BaseController as BaseController;
-use App\Models\Category;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Models\User;
+use App\Http\Controllers\API\BaseController as BaseController;
 
 class HotelController extends BaseController
 {
     //
     public function index()
     {
-        // get hotel image and category
+        // return hotels with category and in category get all rooms
         $hotels = Hotel::get();
         return $this->sendResponse(HotelResource::collection($hotels), 'Hotels retrieved successfully.');
     }
@@ -42,30 +42,39 @@ class HotelController extends BaseController
             'room_total' => 'required',
             'parking_slot' => 'required',
             'bathrooms' => 'required',
-            // create_by user admin
+            // create_by has to be user admin in table users
             'created_by' => 'required',
         ]);
 
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
-        $hotel = Hotel::create($input);
 
-        return $this->sendResponse(new HotelResource($hotel), 'Hotel created successfully.');
+        $user = User::find($input['created_by']);
+        if (is_null($user)) {
+            return $this->sendError('User is not found.');
+        }
+        if ($user->role != 'admin') {
+            return $this->sendError('User is not admin.');
+        }
+        if ($user->role == 'admin') {
+            $hotel = Hotel::create($input);
+            return $this->sendResponse(new HotelResource($hotel), 'Hotel created successfully.');
+        }
     }
 
     public function update(Request $request, $id)
     {
         $input = $request->all();
         $validator = Validator::make($input, [
-            'name' => 'required',
-            'address' => 'required',
-            'hotline' => 'required',
-            'email' => 'required',
+            'name',
+            'address',
+            'hotline',
+            'email',
             'description',
-            'room_total' => 'required',
-            'parking_slot' => 'required',
-            'bathrooms' => 'required',
+            'room_total',
+            'parking_slot',
+            'bathrooms',
             // create_by user admin
         ]);
 
@@ -101,20 +110,72 @@ class HotelController extends BaseController
 
         $category = $hotel->category;
         $hotelImage = $hotel->hotelImage;
+        $room = $hotel->category->map(function ($category) {
+            return $category->room;
+        });
+        $roomImage = $hotel->category->map(function ($category) {
+            return $category->room->map(function ($room) {
+                return $room->roomImage;
+            });
+        });
+        $booking = $hotel->booking;
 
+        // only get review != null
+        $review = $hotel->booking->map(function ($booking) {
+            return $booking->review;
+        })->filter(function ($review) {
+            return !is_null($review);
+        });
 
-        // if hotel delete, category and hotel image will update deleted_at
+        // only get reply != null
+        $reply = $review->map(function ($review) {
+            return $review->reply;
+        })->filter(function ($reply) {
+            return !is_null($reply);
+        });
+
+        // echo $reply;
+        // echo $room;  
+        // echo $roomImage;
+        // echo $review;
+
+        // if hotel delete, category, room and hotel image will update deleted_at
         if ($hotel->delete()) {
-            if ($category) {
-                foreach ($category as $item) {
-                    $item->delete();
+            foreach ($category as $cat) {
+                $cat->delete();
+            }
+            foreach ($room as $r) {
+                foreach ($r as $ro) {
+                    $ro->delete();
                 }
             }
-            if ($hotelImage) {
-                foreach ($hotelImage as $item) {
-                    $item->delete();
+            foreach ($hotelImage as $hi) {
+                $hi->delete();
+            }
+            foreach ($roomImage as $ri) {
+                foreach ($ri as $r) {
+                    foreach ($r as $ro) {
+                        $ro->delete();
+                    }
                 }
             }
+            foreach ($booking as $b) {
+                $b->delete();
+            }
+
+            // delete review, if review has null value, it will not delete
+            foreach ($review as $r) {
+                $r->delete();
+            }
+
+            // delete reply, if reply has null value, it will not delete
+            foreach ($reply as $rp) {
+                foreach ($rp as $r) {
+                    $r->delete();
+                }
+            }
+        } else {
+            return $this->sendError('Hotel not deleted.');
         }
 
         return $this->sendResponse([], 'Hotel deleted successfully.');
@@ -123,16 +184,84 @@ class HotelController extends BaseController
 
     public function restore($id)
     {
-        // category and hotel image will restore
+        // if hotel restore, category, room, room image and hotel image will update deleted_at
         $hotel = Hotel::onlyTrashed()->find($id);
+
         if (is_null($hotel)) {
             return $this->sendError('Hotel not found.');
         }
 
-        if($hotel->restore()){
+        $category = $hotel->category()->onlyTrashed()->get();
+        $hotelImage = $hotel->hotelImage()->onlyTrashed()->get();
+        $room = $hotel->category()->onlyTrashed()->get()->map(function ($category) {
+            return $category->room()->onlyTrashed()->get();
+        });
+        $roomImage = $hotel->category()->onlyTrashed()->get()->map(function ($category) {
+            return $category->room()->onlyTrashed()->get()->map(function ($room) {
+                return $room->roomImage()->onlyTrashed()->get();
+            });
+        });
+        $booking = $hotel->booking()->onlyTrashed()->get();
+        $review = $hotel->booking()->onlyTrashed()->get()->map(function ($booking) {
+            return $booking->review()->onlyTrashed()->get();
+        });
+        $reply = $hotel->booking()->onlyTrashed()->get()->map(function ($booking) {
+            return $booking->review()->onlyTrashed()->get()->map(function ($review) {
+                return $review->reply()->onlyTrashed()->get();
+            });
+        });
+
+        // echo $category . "<br>";
+        // echo $hotelImage . "<br>";
+        // echo $room . "<br>";
+        // echo $roomImage . "<br>";
+
+        // restore hotel
+        if ($hotel->restore()) {
+            // restore category
+            foreach ($category as $cat) {
+                $cat->restore();
+            }
+            // restore room
+            foreach ($room as $r) {
+                foreach ($r as $ro) {
+                    $ro->restore();
+                }
+            }
+            // restore hotel image
+            foreach ($hotelImage as $hi) {
+                $hi->restore();
+            }
+            // restore room image
+            foreach ($roomImage as $ri) {
+                foreach ($ri as $r) {
+                    foreach ($r as $ro) {
+                        $ro->restore();
+                    }
+                }
+            }
+
+            // restore booking
+            foreach ($booking as $b) {
+                $b->restore();
+            }
+            // restore review
+            foreach ($review as $r) {
+                foreach ($r as $ro) {
+                    $ro->restore();
+                }
+            }
+            // restore reply
+            foreach ($reply as $rp) {
+                foreach ($rp as $r) {
+                    foreach ($r as $ro) {
+                        $ro->restore();
+                    }
+                }
+            }
+
             return $this->sendResponse([], 'Hotel restored successfully.');
-        }
-        else{
+        } else {
             return $this->sendError('Hotel not restored.');
         }
     }
