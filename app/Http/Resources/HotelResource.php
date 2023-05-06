@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\CategoryResource;
 
 class HotelResource extends JsonResource
 {
@@ -28,8 +29,13 @@ class HotelResource extends JsonResource
             'rating' => $this->rating,
             'created_at' => $this->created_at->format('Y-m-d'),
             'updated_at' => $this->updated_at->format('Y-m-d'),
+
             'images' => $this->hotelImage,
             'categories' => $this->category,
+            // get all rooms of categories
+            'rooms' => $this->category->map(function ($category) {
+                return $category->room;
+            })
         ];
     }
 }
