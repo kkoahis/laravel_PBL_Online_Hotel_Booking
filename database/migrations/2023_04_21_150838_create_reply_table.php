@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 return new class extends Migration
 {
@@ -14,12 +15,12 @@ return new class extends Migration
         Schema::create('reply', function (Blueprint $table) {
             $table->id();
             $table->foreignId('review_id')->constrained('review')->onDelete('cascade')->onUpdate('cascade');
+            // user_id role has to be hotel in table users
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->onUpdate('cascade');
             $table->text('content');
-            $table->date('date_reply');
-            $table->date('date_update');
             
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

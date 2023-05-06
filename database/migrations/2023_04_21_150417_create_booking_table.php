@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 return new class extends Migration
 {
@@ -28,6 +29,7 @@ return new class extends Migration
             $table->date('date_out');
             $table->date('date_booking');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

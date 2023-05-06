@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Reply extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $table = 'reply';
 
@@ -15,8 +17,6 @@ class Reply extends Model
         'review_id',
         'user_id',
         'content',
-        'date_reply',
-        'date_update'
     ];
 
     public function review()

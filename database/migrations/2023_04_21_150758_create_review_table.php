@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 return new class extends Migration
 {
@@ -18,13 +19,11 @@ return new class extends Migration
             $table->foreignId('booking_id')->constrained('booking')->onDelete('cascade')->onUpdate('cascade');
             $table->longText('title');
             $table->longText('content');
+            // rating is from 1 to 5
             $table->float('rating');
-            // date
-            $table->date('date_review');
-            // update date
-            $table->date('date_update');
-
+            $table->boolean('is_approved')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

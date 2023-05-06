@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('payment', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->foreignId('booking_id')->constrained('booking')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('booking_id')->constrained('booking')->onDelete('cascade')->onUpdate('cascade')->unique();
             // QR
             $table->longText('qr_code')->nullable();
             $table->longText('qr_code_url')->nullable();

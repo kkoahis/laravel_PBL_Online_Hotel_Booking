@@ -28,7 +28,8 @@ class Hotel extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        // hotel create by user has role admin
+        return $this->belongsTo(User::class, 'created_by', 'id')->where('role', 'admin');
     }
 
     public function booking()
@@ -44,10 +45,5 @@ class Hotel extends Model
     public function hotelImage()
     {
         return $this->hasMany(HotelImage::class);
-    }
-
-    public function review()
-    {
-        return $this->hasMany(Review::class);
     }
 }

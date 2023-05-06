@@ -16,10 +16,10 @@ return new class extends Migration
             // create by user
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email');
             $table->longText('description')->nullable();
             $table->string('address')->nullable();
-            $table->string('hotline')->nullable()->unique();
+            $table->string('hotline')->nullable();
             $table->integer('room_total')->nullable();
             $table->unsignedInteger('parking_slot')->nullable();
             $table->integer('bathrooms')->nullable();
