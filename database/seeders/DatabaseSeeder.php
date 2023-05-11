@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Hotel::factory()->count(50)->create();
+        // Hotel::factory()->count(50)->create();
         HotelImage::factory(200)->create();
 
         Category::factory(150)->create();

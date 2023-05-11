@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
+use Illuminate\Auth\Access\Gate;
 use Illuminate\Support\Str;
 
 
@@ -61,7 +62,6 @@ class UserController extends Controller
             }
 
             $token = $user->createToken(Str::random(40));
-
             return response()->json(['token' => $token->plainTextToken]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

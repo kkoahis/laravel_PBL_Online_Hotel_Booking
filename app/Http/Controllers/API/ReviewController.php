@@ -8,6 +8,7 @@ use App\Http\Resources\ReviewResource;
 use App\Models\Review;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\API\BaseController as BaseController;
+use App\Models\Booking;
 
 class ReviewController extends BaseController
 {
@@ -46,6 +47,13 @@ class ReviewController extends BaseController
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
+
+        // if user_id in booking table == user_id in reveiw table than create review
+        $user_id = Booking::find($input['booking_id'])->user_id;
+        if ($user_id != $input['user_id']) {
+            return $this->sendError('User not found.');
+        }
+
         $review = Review::create($input);
 
         return $this->sendResponse(new ReviewResource($review), 'Review created successfully.');

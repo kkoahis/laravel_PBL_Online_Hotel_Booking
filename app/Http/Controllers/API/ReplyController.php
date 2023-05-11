@@ -34,8 +34,8 @@ class ReplyController extends BaseController
     {
         $input = $request->all();
         $validator = Validator::make($input, [
-            'user_id' => 'required',
-            'review_id' => 'required',
+            'user_id' => 'required|exists:users,id,deleted_at,NULL',
+            'review_id' => 'required|exists:review,id,deleted_at,NULL',
             'content' => 'required',
         ]);
 
@@ -52,7 +52,7 @@ class ReplyController extends BaseController
         $input = $request->all();
         $validator = Validator::make($input, [
             // 'user_id' => 'required',
-            'review_id' => 'required',
+            'review_id' => 'required|exists:review,id,deleted_at,NULL',
             'content' => 'required',
         ]);
 
@@ -60,6 +60,11 @@ class ReplyController extends BaseController
             return $this->sendError('Validation Error.', $validator->errors());
         }
         $reply = Reply::find($id);
+
+        if (is_null($reply)) {
+            return $this->sendError('Reply not found.');
+        }
+
         // $reply->user_id = $input['user_id'];
         $reply->review_id = $input['review_id'];
         $reply->content = $input['content'];

@@ -31,7 +31,7 @@ class HotelFactory extends Factory
             "bathrooms" => $this->faker->numberBetween(0, 50),
             "rating" => $this->faker->randomFloat(1, 4, 5),
             // create_by is foreign key of account table with role is admin with any id
-            "created_by" => User::where('role', 'admin')->inRandomOrder()->first()->id,
+            "created_by" => User::where('role', 'hotel')->inRandomOrder()->first()->id,
         ];
     }
 }

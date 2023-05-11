@@ -25,9 +25,9 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->boolean('is_payment')->default(false);
             $table->string('payment_type')->nullable();
-            $table->date('date_in');
-            $table->date('date_out');
-            $table->date('date_booking');
+            $table->dateTime('date_in');
+            $table->dateTime('date_out');
+            $table->dateTime('date_booking');
             $table->timestamps();
             $table->softDeletes();
         });

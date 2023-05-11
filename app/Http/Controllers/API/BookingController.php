@@ -8,7 +8,11 @@ use App\Http\Controllers\API\BaseController as BaseController;
 use App\Http\Resources\BookingResource;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Booking;
+use App\Models\Room;
+use Exception;
 
+use function PHPUnit\Framework\isEmpty;
+use function PHPUnit\Framework\isNull;
 
 class BookingController extends BaseController
 {
@@ -32,6 +36,7 @@ class BookingController extends BaseController
     public function store(Request $request)
     {
         $input = $request->all();
+        // dd($input);
         $validator = Validator::make($input, [
             'user_id' => 'required|exists:users,id,deleted_at,NULL',
             'hotel_id' => 'required|exists:hotel,id,deleted_at,NULL',
@@ -49,7 +54,31 @@ class BookingController extends BaseController
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
+
         $booking = Booking::create($input);
+
+        // if booking create success, create payment and booking detail
+        if ($booking) {
+            $booking->payment()->create([
+                'booking_id' => $booking->id,
+                'total_amount' => $input['total_amount'],
+                'payment_status' => $input['is_payment'],
+            ]);
+
+            if (($input['room_id'])) {
+                $roomID = Room::find($input['room_id']);
+                if ($roomID) {
+                    $booking->bookingDetail()->create([
+                        'booking_id' => $booking->id,
+                        'room_id' => $input['room_id'],
+                    ]);
+                } else {
+                    return $this->sendError('RoomID not found.');
+                }
+            } else {
+                return $this->sendError('RoomID not found.');
+            }
+        }
 
         return $this->sendResponse(new BookingResource($booking), 'Booking created successfully.');
     }

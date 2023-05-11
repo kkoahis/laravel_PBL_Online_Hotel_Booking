@@ -36,7 +36,7 @@ Route::prefix('hotels')->group(function () {
 });
 
 // Hotels API with
-Route::middleware(['auth:sanctum', 'verified'])->prefix('hotels')->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'role:hotel'])->prefix('hotels')->group(function () {
     Route::get('hotels', [HotelController::class, 'index']);
     Route::get('hotels/{id}', [HotelController::class, 'show']);
     Route::post('/', [HotelController::class, 'store']);
@@ -53,7 +53,7 @@ Route::prefix('hotel-images')->group(function () {
 });
 
 // hotel images API
-Route::middleware(['auth:sanctum', 'verified'])->prefix('hotel-images')->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'role:hotel'])->prefix('hotel-images')->group(function () {
     Route::get('hotel-images', [HotelImageController::class, 'index']);
     Route::get('hotel-images/{id}', [HotelImageController::class, 'show']);
     Route::post('/', [HotelImageController::class, 'store']);
@@ -72,7 +72,7 @@ Route::prefix('categories')->group(function () {
 });
 
 // Categories API
-Route::middleware(['auth:sanctum', 'verified'])->prefix('categories')->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'role:hotel'])->prefix('categories')->group(function () {
     Route::get('categories', [CategoryController::class, 'index']);
     Route::get('categories/{id}', [CategoryController::class, 'show']);
     Route::post('/', [CategoryController::class, 'store']);
@@ -91,7 +91,7 @@ Route::prefix('rooms')->group(function () {
 });
 
 // Room API
-Route::middleware(['auth:sanctum', 'verified'])->prefix('rooms')->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'role:hotel'])->prefix('rooms')->group(function () {
     Route::get('rooms', [RoomController::class, 'index']);
     Route::get('rooms/{id}', [RoomController::class, 'show']);
     Route::post('/', [RoomController::class, 'store']);
@@ -111,7 +111,7 @@ Route::prefix('room-images')->group(function () {
 });
 
 // Room Image API
-Route::middleware(['auth:sanctum', 'verified'])->prefix('room-images')->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'role:hotel'])->prefix('room-images')->group(function () {
     Route::get('room-images', [RoomImageController::class, 'index']);
     Route::get('room-images/{id}', [RoomImageController::class, 'show']);
     Route::post('/', [RoomImageController::class, 'store']);
@@ -124,7 +124,7 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('room-images')->group(fu
 });
 
 // Booking API
-Route::middleware(['auth:sanctum', 'verified'])->prefix('bookings')->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'role:user'])->prefix('bookings')->group(function () {
     Route::get('', [BookingController::class, 'index']);
     Route::get('/{id}', [BookingController::class, 'show']);
     Route::post('/', [BookingController::class, 'store']);
@@ -136,7 +136,7 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('bookings')->group(funct
 });
 
 // Booking Detail API
-Route::middleware(['auth:sanctum', 'verified'])->prefix('booking-details')->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'role:hotel'])->prefix('booking-details')->group(function () {
     Route::get('', [BookingDetailController::class, 'index']);
     Route::get('/{id}', [BookingDetailController::class, 'show']);
     Route::post('/', [BookingDetailController::class, 'store']);
@@ -150,7 +150,7 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('booking-details')->grou
 
 
 // Payment API
-Route::middleware(['auth:sanctum', 'verified'])->prefix('payments')->group(
+Route::middleware(['auth:sanctum', 'verified','role:admin'])->prefix('payments')->group(
     function () {
         Route::get('', [PaymentController::class, 'index']);
         Route::get('/{id}', [PaymentController::class, 'show']);
@@ -163,10 +163,16 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('payments')->group(
     }
 );
 
-Route::prefix('reviews')->group(function () {
-    Route::get('/', [ReviewController::class, 'index']);
-    Route::get('/{id}', [ReviewController::class, 'show']);
-});
+Route::prefix('reviews')->group(
+    function () {
+        Route::get('/', [ReviewController::class, 'index']);
+        Route::get('/{id}', [ReviewController::class, 'show']);
+        Route::get('/hotel/{id}', [ReviewController::class, 'getReviewByHotelId']);
+        Route::get('/booking/{id}', [ReviewController::class, 'getReviewByBookingId']);
+        // Route::get('/user/{id}', [ReviewController::class, 'getReviewByUserId']);
+    }
+);
+
 
 // Review API
 Route::middleware(['auth:sanctum', 'verified'])->prefix('reviews')->group(function () {
@@ -176,29 +182,38 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('reviews')->group(functi
     Route::put('/{id}', [ReviewController::class, 'update']);
     Route::delete('/{id}', [ReviewController::class, 'destroy']);
 
-    Route::get('/hotel/{id}', [ReviewController::class, 'getReviewByHotelId']);
+    Route::get('reviews/hotel/{id}', [ReviewController::class, 'getReviewByHotelId']);
     Route::delete('/hotel/{id}', [ReviewController::class, 'deleteByHotelId']);
     Route::put('/hotel/{id}', [ReviewController::class, 'restoreByHotelId']);
 
-    Route::get('/booking/{id}', [ReviewController::class, 'getReviewByBookingId']);
+    Route::get('reviews/booking/{id}', [ReviewController::class, 'getReviewByBookingId']);
     Route::put('/restore/{id}', [ReviewController::class, 'restore']);
     Route::put('/hotel/{id}', [ReviewController::class, 'restoreByHotelId']);
 
-    Route::get('/user/{id}', [ReviewController::class, 'getReviewByUserId']);
+    // Route::get('/user/{id}', [ReviewController::class, 'getReviewByUserId']);
     Route::put('/user/{id}', [ReviewController::class, 'restoreByUserId']);
     Route::delete('/user/{id}', [ReviewController::class, 'deleteByUserId']);
 });
 
-// Reply API
-Route::controller(ReplyController::class)->group(function () {
-    Route::get('replies', 'index');
-    Route::get('replies/{id}', 'show');
-    Route::post('replies', 'store');
-    Route::put('replies/{id}', 'update');
-    Route::delete('replies/{id}', 'destroy');
 
-    Route::put('replies/restore/{id}', 'restore');
-    Route::get('replies/review/{id}', 'getByReviewId');
-    Route::delete('replies/review/{id}', 'deleteByReviewId');
-    Route::put('replies/review/{id}', 'restoreByReviewId');
+Route::prefix('replies')->group(
+    function () {
+        Route::get('/', [ReplyController::class, 'index']);
+        Route::get('/{id}', [ReplyController::class, 'show']);
+        Route::get('/review/{id}', [ReplyController::class, 'getByReviewId']);
+    }
+);
+
+// Reply API
+Route::middleware(['auth:sanctum', 'verified'])->prefix('replies')->group(function () {
+    Route::get('replies', [ReplyController::class, 'index']);
+    Route::get('replies/{id}', [ReplyController::class, 'show']);
+    Route::post('/', [ReplyController::class, 'store']);
+    Route::put('/{id}', [ReplyController::class, 'update']);
+    Route::delete('/{id}', [ReplyController::class, 'destroy']);
+
+    Route::put('/restore/{id}', [ReplyController::class, 'restore']);
+    Route::get('replies/review/{id}', [ReplyController::class, 'getByReviewId']);
+    Route::delete('/review/{id}', [ReplyController::class, 'deleteByReviewId']);
+    Route::put('/review/{id}', [ReplyController::class, 'restoreByReviewId']);
 });
