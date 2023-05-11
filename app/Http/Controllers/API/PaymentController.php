@@ -15,7 +15,7 @@ class PaymentController extends BaseController
     //
     public function index()
     {
-        $payments = Payment::get();
+        $payments = Payment::paginate();
         return $this->sendResponse(PaymentResource::collection($payments), 'Payments retrieved successfully.');
     }
 

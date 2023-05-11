@@ -21,7 +21,7 @@ class CategoryFactory extends Factory
             //
             "hotel_id" => Hotel::inRandomOrder()->first()->id,
             "name" => $this->faker->name,
-            "description" => $this->faker->text(100),
+            "description" => $this->faker->text(50),
         ];
     }
 }

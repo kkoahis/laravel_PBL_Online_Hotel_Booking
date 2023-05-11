@@ -14,8 +14,16 @@ class BookingDetailController extends BaseController
     //
     public function index()
     {
-        $bookingDetails = BookingDetail::get();
-        return $this->sendResponse(BookingDetailResource::collection($bookingDetails), 'Booking Details retrieved successfully.');
+        // $bookingDetails = BookingDetail::get();
+        // return $this->sendResponse(BookingDetailResource::collection($bookingDetails), 'Booking Details retrieved successfully.');
+        
+        $bookingDetail = BookingDetail::paginate(30);
+        return response()->json(([
+            'success' => true,
+            'message' => 'Booking Detail retrieved successfully.',
+            'data' => $bookingDetail,
+        ]
+        ));
     }
 
     public function show($id)
@@ -98,26 +106,26 @@ class BookingDetailController extends BaseController
 
     public function getBookingDetailByRoomId($id)
     {
-        $bookingDetail = BookingDetail::where('room_id', $id)->get();
+        $bookingDetail = BookingDetail::where('room_id', $id)->paginate(30);
 
         if (is_null($bookingDetail)) {
-            return $this->sendError('User ID not found.');
+            return $this->sendError('Room ID not found.');
         }
         if (count($bookingDetail) == 0) {
-            return $this->sendError('User ID not found.');
+            return $this->sendError('Room IDnot found.');
         } else {
             return $this->sendResponse(BookingDetailResource::collection($bookingDetail), 'Booking retrieved successfully.');
         }
     }
 
     public function getBookingDetailByBookingId($id){
-        $bookingDetail = BookingDetail::where('booking_id', $id)->get();
+        $bookingDetail = BookingDetail::where('booking_id', $id)->paginate(30);
 
         if (is_null($bookingDetail)) {
-            return $this->sendError('User ID not found.');
+            return $this->sendError('Booking ID not found.');
         }
         if (count($bookingDetail) == 0) {
-            return $this->sendError('User ID not found.');
+            return $this->sendError('Booking ID not found.');
         } else {
             return $this->sendResponse(BookingDetailResource::collection($bookingDetail), 'Booking retrieved successfully.');
         }

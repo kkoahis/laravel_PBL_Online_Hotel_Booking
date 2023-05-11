@@ -15,6 +15,8 @@ class HotelResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // pagination
+
         return [
             'id' => $this->id,
             'created_by' => $this->created_by,

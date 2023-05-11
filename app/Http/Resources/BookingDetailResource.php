@@ -21,6 +21,7 @@ class BookingDetailResource extends JsonResource
             'room_id' => $this->room_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+
         ];
     }
 }

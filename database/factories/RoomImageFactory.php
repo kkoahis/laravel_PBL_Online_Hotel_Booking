@@ -22,7 +22,7 @@ class RoomImageFactory extends Factory
             //
             "room_id" => Room::inRandomOrder()->first()->id,
             "image_url" => $this->faker->imageUrl(),
-            "image_description" => $this->faker->text(100),
+            "image_description" => $this->faker->text(30),
         ];
     }
 }

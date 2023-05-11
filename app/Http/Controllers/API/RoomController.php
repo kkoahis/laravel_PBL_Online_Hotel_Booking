@@ -16,7 +16,7 @@ class RoomController extends BaseController
     public function index()
     {
         // get hotel image and category
-        $rooms = Room::get();
+        $rooms = Room::paginate();
         return $this->sendResponse(RoomResource::collection($rooms), 'Rooms retrieved successfully.');
     }
 
@@ -61,7 +61,7 @@ class RoomController extends BaseController
     {
         $input = $request->all();
         $validator = Validator::make($input, [
-            'category_id'=> 'required|exists:category,id,deleted_at,NULL',
+            'category_id' => 'required|exists:category,id,deleted_at,NULL',
             'name',
             'size',
             'bed',

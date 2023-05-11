@@ -16,7 +16,7 @@ class ReviewController extends BaseController
     public function index()
     {
         // return hotels with category and in category get all rooms
-        $reviews = Review::get();
+        $reviews = Review::paginate();
         return $this->sendResponse(ReviewResource::collection($reviews), 'Reviews retrieved successfully.');
     }
 
@@ -131,7 +131,7 @@ class ReviewController extends BaseController
     public function getReviewByHotelId($id)
     {
         // get hotel_id = $id in table booking
-        $review = Review::get();
+        $review = Review::paginate(10);
         if (is_null($review)) {
             return $this->sendError('Review not found.');
         }

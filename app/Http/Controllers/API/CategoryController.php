@@ -18,6 +18,7 @@ class CategoryController extends BaseController
     {
         $categories = Category::get();
         return $this->sendResponse(CategoryResource::collection($categories), 'Categories retrieved successfully.');
+    
     }
 
     public function show($id)

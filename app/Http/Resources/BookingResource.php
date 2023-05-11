@@ -32,10 +32,10 @@ class BookingResource extends JsonResource
 
             'booking_detail' => $this->bookingDetail,
             'payment' => $this->payment,
+            
             'rooms' => $this->bookingDetail->map(function ($bookingDetail) {
                 return $bookingDetail->room;
             }),
-
         ];
     }
 }

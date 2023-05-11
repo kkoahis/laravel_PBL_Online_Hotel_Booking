@@ -14,5 +14,6 @@ class RoomImageSeeder extends Seeder
     public function run(): void
     {
         //
+        RoomImage::factory()->count(6000)->create();
     }
 }

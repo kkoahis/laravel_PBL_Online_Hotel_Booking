@@ -14,6 +14,6 @@ class HotelImageSeeder extends Seeder
     public function run(): void
     {
         //
-        HotelImage::factory()->count(5000)->create();
+        HotelImage::factory()->count(1000)->create();
     }
 }

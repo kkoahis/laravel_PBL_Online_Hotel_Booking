@@ -33,7 +33,7 @@ class RoomImageController extends BaseController
     public function store(Request $request)
     {
         $input = $request->all();
-        $validator = Validator::make($input, [            
+        $validator = Validator::make($input, [
             'room_id' => 'required|exists:room,id,deleted_at,NULL',
             'image_url' =>  "required",
             'image_description'
@@ -50,7 +50,7 @@ class RoomImageController extends BaseController
     public function update(Request $request, $id)
     {
         $input = $request->all();
-        $validator = Validator::make($input,[
+        $validator = Validator::make($input, [
             'room_id' => 'required|exists:room,id,deleted_at,NULL',
             'image_url' =>  "required",
             'image_description'
@@ -75,7 +75,7 @@ class RoomImageController extends BaseController
     {
         // find id and delete
         $roomImage = RoomImage::where('room_id', $id);
-        if($roomImage->delete()){
+        if ($roomImage->delete()) {
             return $this->sendResponse([], 'RoomImage deleted successfully.');
         }
         return $this->sendError('RoomImage not found.');
@@ -84,7 +84,7 @@ class RoomImageController extends BaseController
     public function restoreByRoomId($id)
     {
         $roomImage = RoomImage::onlyTrashed()->where('room_id', $id);
-        if($roomImage->restore()){
+        if ($roomImage->restore()) {
             return $this->sendResponse([], 'RoomImage restored successfully.');
         }
         return $this->sendError('RoomImage not found.');

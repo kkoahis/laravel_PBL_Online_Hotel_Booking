@@ -11,9 +11,6 @@ use App\Models\Booking;
 use App\Models\Room;
 use Exception;
 
-use function PHPUnit\Framework\isEmpty;
-use function PHPUnit\Framework\isNull;
-
 class BookingController extends BaseController
 {
     public function index()

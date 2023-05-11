@@ -24,7 +24,7 @@ class BookingFactory extends Factory
             "hotel_id" => Hotel::inRandomOrder()->first()->id,
             "room_count" => $this->faker->numberBetween(1, 5),
             // total amount is Dollar
-            "total_amount" => $this->faker->numberBetween(100, 1000),
+            "total_amount" => $this->faker->numberBetween(100, 2000),
             "status" => $this->faker->randomElement(['pending', 'approved', 'rejected']),
             "description" => $this->faker->text(100),
             "is_payment" => $this->faker->boolean,

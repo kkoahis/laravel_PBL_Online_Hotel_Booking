@@ -18,7 +18,7 @@ class HotelImageController extends BaseController
     public function index()
     {
         $hotelImage = HotelImage::get();
-        return $this->sendResponse(HotelImageResource::collection($hotelImage), 'Hotels-image retrieved successfully.');
+        return $this->sendResponse(HotelImageResource::collection($hotelImage), 'Hotel image retrieved successfully.');
     }
 
     public function show($id)

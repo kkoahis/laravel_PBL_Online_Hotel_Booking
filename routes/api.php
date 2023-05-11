@@ -35,7 +35,7 @@ Route::prefix('hotels')->group(function () {
     Route::get('/{id}', [HotelController::class, 'show']);
 });
 
-// Hotels API with
+// Hotels API 
 Route::middleware(['auth:sanctum', 'verified', 'role:hotel'])->prefix('hotels')->group(function () {
     Route::get('hotels', [HotelController::class, 'index']);
     Route::get('hotels/{id}', [HotelController::class, 'show']);
@@ -150,7 +150,7 @@ Route::middleware(['auth:sanctum', 'verified', 'role:hotel'])->prefix('booking-d
 
 
 // Payment API
-Route::middleware(['auth:sanctum', 'verified','role:admin'])->prefix('payments')->group(
+Route::middleware(['auth:sanctum', 'verified','role:user'])->prefix('payments')->group(
     function () {
         Route::get('', [PaymentController::class, 'index']);
         Route::get('/{id}', [PaymentController::class, 'show']);
@@ -172,7 +172,6 @@ Route::prefix('reviews')->group(
         // Route::get('/user/{id}', [ReviewController::class, 'getReviewByUserId']);
     }
 );
-
 
 // Review API
 Route::middleware(['auth:sanctum', 'verified'])->prefix('reviews')->group(function () {

@@ -14,9 +14,13 @@ class HotelController extends BaseController
     //
     public function index()
     {
-        // return hotels with category and in category get all rooms
-        $hotels = Hotel::get();
-        return $this->sendResponse(HotelResource::collection($hotels), 'Hotels retrieved successfully.');
+        $hotel = Hotel::paginate(20);
+        return response()->json(([
+            'success' => true,
+            'message' => 'Hotel retrieved successfully.',
+            'data' => $hotel,
+        ]
+        ));
     }
 
     public function show($id)
